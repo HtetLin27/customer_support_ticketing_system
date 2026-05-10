@@ -1,0 +1,8 @@
+{
+  "name": "ticketing-system",
+  "private": true,
+  "scripts": {
+    "format": "npm --prefix client run format && npm --prefix server run format",
+    "format:check": "npm --prefix client run format:check && npm --prefix server run format:check"
+  }
+}
