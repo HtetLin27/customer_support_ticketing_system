@@ -29,7 +29,7 @@ router.use(protect);
 
 // ── Read ──────────────────────────────────────────────────────────────────────
 router.get('/', authorise('customer', 'agent', 'admin'), listRules, listTickets);
-router.get('/feed', authorise('agnet', 'admin'), getTicketFeed);
+router.get('/feed', authorise('agent', 'admin'), getTicketFeed);
 router.get('/:id', authorise('customer', 'agent', 'admin'), getTicket);
 router.get('/:id/history', authorise('customer', 'agent', 'admin'), getTicketHistory);
 router.get('/:id/transitions', authorise('customer', 'agent', 'admin'), getTransitions);

@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(user));
     setUser(user);
     connectSocket(token);
+    return user;
   };
 
   const logout = () => {

@@ -65,8 +65,6 @@ const createComment = async (req, res, next) => {
         newStatus: 'open',
         reason: 'Customer replied — auto-reopened',
       });
-      const commenter = await User.findByPk(req.user.id);
-      notifyNewComment(ticket, full, commenter);
     }
 
     console.log('Auto-Reopen Pass');
@@ -105,6 +103,9 @@ const createComment = async (req, res, next) => {
         message: `New reply on ticket "${ticket.title}"`,
       });
     }
+
+    const commenter = await User.findByPk(req.user.id);
+    notifyNewComment(ticket, full, commenter);
 
     return res.status(201).json({
       message: 'Comment added',

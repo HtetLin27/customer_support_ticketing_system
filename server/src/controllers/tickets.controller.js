@@ -143,7 +143,6 @@ const createTicket = async (req, res, next) => {
     emitTicketCreated(io, full);
     const customer = await User.findByPk(req.user.id);
     notifyTicketCreated(full, customer);
-    const { User } = require('../models/index');
     const admins = await User.findAll({ where: { role: 'admin' } });
     admins.forEach((admin) => {
       createNotification(io, {

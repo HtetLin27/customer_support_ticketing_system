@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getNotifications, markRead, markAllRead } from '../api/notifications.api';
-import { getSocket } from '../services/socket';
+import { connectSocket, getSocket } from '../services/socket';
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext(null);
@@ -17,8 +17,8 @@ export const NotificationProvider = ({ children }) => {
       const res = await getNotifications();
       setNotifications(res.data.notifications);
       setUnreadCount(res.data.unreadCount);
-    } catch {
-      // Silently fail — notifications are not critical
+    } catch (err) {
+      console.error('Failed to load notifications:', err?.response?.data || err.message);
     }
   }, [user]);
 
@@ -28,7 +28,10 @@ export const NotificationProvider = ({ children }) => {
 
   // Listen for real-time notifications via socket
   useEffect(() => {
-    const socket = getSocket();
+    if (!user) return;
+
+    const token = localStorage.getItem('token');
+    const socket = getSocket() || (token ? connectSocket(token) : null);
     if (!socket) return;
 
     const handleNew = (notification) => {
@@ -37,9 +40,18 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount((prev) => prev + 1);
     };
 
+    const handleConnect = () => {
+      // Re-sync in case any notifications were missed while disconnected
+      load();
+    };
+
     socket.on('notification:new', handleNew);
-    return () => socket.off('notification:new', handleNew);
-  }, [user]);
+    socket.on('connect', handleConnect);
+    return () => {
+      socket.off('notification:new', handleNew);
+      socket.off('connect', handleConnect);
+    };
+  }, [user, load]);
 
   const handleMarkRead = async (id) => {
     await markRead(id);
