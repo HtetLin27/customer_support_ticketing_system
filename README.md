@@ -1,77 +1,65 @@
 # Customer Support Ticketing System
 
-A full-stack helpdesk and ticket management platform built with React, Express, PostgreSQL, and Socket.IO.
+Full-stack customer support platform with role-based workflows, real-time updates, and operational dashboards.
 
-The system supports role-based workflows for customers, agents, and admins, including real-time ticket updates, comment threads, internal notes, assignment flows, and reporting dashboards.
+## Overview
 
-## Features
+This project simulates a production-style support desk where:
 
-- Role-based access control for `customer`, `agent`, and `admin`
-- End-to-end ticket lifecycle management:
-  - create, assign, reassign, status transitions, delete
-- Public comments and internal notes
-- Real-time updates using Socket.IO:
-  - ticket updates, comments, typing indicators, notifications
+- Customers create and track support tickets
+- Agents work assigned tickets and reply to customers
+- Admins manage assignment, user roles, and reporting
+
+The app includes real-time ticket updates, comment threads, internal notes, workload visibility, and analytics endpoints for reporting views.
+
+## Core Features
+
+- Authentication with JWT (`register`, `login`, `me`)
+- Role-based access (`customer`, `agent`, `admin`)
+- Ticket lifecycle:
+  - Create, update, assign, auto-assign, reassign, status transitions, history
+- Commenting system:
+  - Public replies and internal notes
+  - Edit/delete constraints by role
+- Real-time Socket.IO events:
+  - Ticket updates
+  - Comment events
+  - Typing indicators
+  - Notifications
 - Admin dashboards:
-  - ticket volume, agent performance, status distribution, workload view
-- Notification center with unread tracking
-- PostgreSQL migrations and seeders for reproducible local setup
+  - Ticket volume report
+  - Agent performance report
+  - Ticket status distribution
+  - Agent workload
 
 ## Tech Stack
 
-- Frontend: React, React Router, Axios, Tailwind CSS
-- Backend: Node.js, Express, Sequelize ORM, JWT auth
+- Frontend: React, React Router, Tailwind CSS, Axios, Socket.IO Client
+- Backend: Node.js, Express, Sequelize ORM, Socket.IO, JWT
 - Database: PostgreSQL
-- Realtime: Socket.IO
-- Tooling: Sequelize CLI, Prettier
+- Tooling: Docker Compose, Sequelize CLI, Prettier
 
-## Repository Structure
+## Monorepo Structure
 
 ```text
 ticketing-system/
-├─ client/      # React frontend
-├─ server/      # Express API + Sequelize models/migrations
-├─ docker-compose.yml
-└─ package.json # root formatting scripts
+├── client/                 # React frontend
+├── server/                 # Express + Sequelize backend
+├── docker-compose.yml      # Local PostgreSQL + pgAdmin
+├── package.json            # Root format scripts
+├── .prettierrc.json
+└── .prettierignore
 ```
 
-## Prerequisites
+## Local Setup
 
-- Node.js 18+ (LTS recommended)
+### 1. Prerequisites
+
+- Node.js 18+
 - npm
-- Docker Desktop (for local PostgreSQL via Docker Compose)
+- Docker Desktop
 
-## Environment Configuration
-
-### Server
-
-Copy `server/.env.example` to `server/.env` and set values:
-
-```bash
-cp server/.env.example server/.env
-```
-
-Minimum required:
-
-- `JWT_SECRET`
-- database values (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`)
-
-### Client
-
-Copy `client/.env.example` to `client/.env`:
-
-```bash
-cp client/.env.example client/.env
-```
-
-Defaults target local backend:
-
-- `REACT_APP_API_URL=http://localhost:5002/api`
-- `REACT_APP_SOCKET_URL=http://localhost:5002`
-
-## Local Development Setup
-
-1. Install dependencies:
+### 2. Install Dependencies
 
 ```bash
 cd client && npm install
@@ -79,15 +67,37 @@ cd ../server && npm install
 cd ..
 ```
 
-2. Start PostgreSQL (and optional pgAdmin):
+### 3. Environment Variables
+
+Create env files from examples:
+
+```bash
+cp server/.env.example server/.env
+cp client/.env.example client/.env
+```
+
+Important values:
+
+- `server/.env`
+  - `JWT_SECRET` (required)
+  - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`
+- `client/.env`
+  - `REACT_APP_API_URL=http://localhost:5002/api`
+  - `REACT_APP_SOCKET_URL=http://localhost:5002`
+
+### 4. Start Database
 
 ```bash
 docker compose up -d postgres
-# optional:
+```
+
+Optional:
+
+```bash
 docker compose up -d pgadmin
 ```
 
-3. Run migrations and seed data:
+### 5. Run Migrations + Seed Data
 
 ```bash
 cd server
@@ -95,36 +105,39 @@ npm run migrate
 npm run seed
 ```
 
-4. Start backend:
+### 6. Run the App
+
+Terminal 1:
 
 ```bash
 cd server
 npm run dev
 ```
 
-5. Start frontend (new terminal):
+Terminal 2:
 
 ```bash
 cd client
 npm start
 ```
 
-## Application URLs
+## Default URLs
 
 - Frontend: `http://localhost:3000`
-- API health: `http://localhost:5002/health`
-- pgAdmin (optional): `http://localhost:5050`
+- Backend API: `http://localhost:5002`
+- Health check: `http://localhost:5002/health`
+- pgAdmin: `http://localhost:5050`
 
-## Demo Accounts (Seeded)
+## Seeded Demo Accounts
 
-After `npm run seed`, you can log in with:
+After running seeders:
 
 - Admin: `admin@ticketing.dev`
 - Agent: `alice@ticketing.dev`
 - Customer: `bob@ticketing.dev`
-- Password for all: `password123`
+- Password: `password123`
 
-## Scripts
+## Available Scripts
 
 ### Root
 
@@ -133,50 +146,49 @@ npm run format
 npm run format:check
 ```
 
-### Client
+### Client (`client/package.json`)
 
 ```bash
-cd client
 npm start
 npm run build
+npm run test
 npm run format
 npm run format:check
 ```
 
-### Server
+### Server (`server/package.json`)
 
 ```bash
-cd server
 npm run dev
 npm run start
+npm run test
 npm run migrate
 npm run seed
 npm run format
 npm run format:check
 ```
 
-## API Overview
+## API Surface (High-Level)
 
-Base URL: `http://localhost:5002/api`
+Base: `/api`
 
-- Auth: `/auth/*`
-- Tickets: `/tickets/*`
-- Ticket comments: `/tickets/:ticketId/comments/*`
-- Notifications: `/notifications/*`
-- Admin routes: `/admin/*`
-- Users/workload routes: `/users/*`
+- Auth: `/auth`
+- Tickets: `/tickets`
+- Comments: `/tickets/:ticketId/comments`
+- Notifications: `/notifications`
+- Admin: `/admin`
+- Users: `/users`
 
-## Troubleshooting
+## Production Notes
 
-- Socket connection refused (`/socket.io`):
-  - ensure backend is running on `:5002`
-  - verify `REACT_APP_SOCKET_URL` in `client/.env`
-- DB or relation errors:
-  - rerun migrations: `cd server && npm run migrate`
-- Auth errors (`401/403`):
-  - verify token is present and user role has access to the route
+- Configure secure values for:
+  - `JWT_SECRET`
+  - DB credentials
+  - Mail credentials
+- Use HTTPS and stricter CORS rules
+- Add monitoring, rate limiting, and structured logging
+- Add CI checks for tests + formatting
 
-## Notes
+## License
 
-- This project currently uses JavaScript in both frontend and backend.
-- Formatting is managed through Prettier with shared root config.
+This project is currently unlicensed for public reuse.
